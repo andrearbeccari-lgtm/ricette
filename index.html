@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow, noimageindex">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f2ea">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131010">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8f4ec">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#171311">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,6 +14,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icone/icona-192.png">
 <link rel="manifest" href="manifest.json">
 <title>Libro di Ricette</title>
+<script>try{var t=localStorage.getItem('ricetteTema');t=t&&JSON.parse(t);if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 :root{
   --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
@@ -21,17 +22,19 @@
   --r:16px;
 }
 html[data-theme="dark"]{
-  --bg:#131010; --bg2:#1b1614; --panel:rgba(255,255,255,.045); --panel2:rgba(255,255,255,.08);
-  --border:rgba(255,255,255,.09); --text:#f2ebe1; --muted:#a79c8d;
-  --accent:#e2543f; --accent-soft:rgba(226,84,63,.16); --gold:#e0a43c;
-  --chip:#2a2320; --chip-on:#e2543f; --chip-on-text:#fff;
+  /* carbone caldo */
+  --bg:#171311; --bg2:#1f1916; --panel:rgba(255,240,225,.045); --panel2:rgba(255,240,225,.08);
+  --border:rgba(255,235,215,.10); --text:#f0e8dc; --muted:#a99b8a;
+  --accent:#de7a59; --accent-soft:rgba(222,122,89,.15); --gold:#d9a54a;
+  --chip:#2a221e; --chip-on:#b4553a; --chip-on-text:#fff;
   --shadow:0 18px 50px rgba(0,0,0,.5); --sat:46%; --lig:24%; --lig2:14%;
 }
 html[data-theme="light"]{
-  --bg:#f7f2ea; --bg2:#efe7db; --panel:#ffffff; --panel2:#f4ede2;
-  --border:rgba(60,40,30,.12); --text:#2c2521; --muted:#8a7d70;
-  --accent:#c0392b; --accent-soft:rgba(192,57,43,.1); --gold:#b07818;
-  --chip:#ece3d6; --chip-on:#c0392b; --chip-on-text:#fff;
+  /* carta, inchiostro e terracotta come il libro stampato */
+  --bg:#f8f4ec; --bg2:#f1eadf; --panel:#fffdf8; --panel2:#f5efe5;
+  --border:rgba(90,62,40,.15); --text:#2b2520; --muted:#7b6f61;
+  --accent:#a8492f; --accent-soft:rgba(168,73,47,.10); --gold:#a87a2a;
+  --chip:#ede5d8; --chip-on:#a8492f; --chip-on-text:#fff;
   --shadow:0 14px 40px rgba(90,60,40,.18); --sat:52%; --lig:82%; --lig2:70%;
 }
 *{box-sizing:border-box}
@@ -104,6 +107,8 @@ body{
 .gsez{grid-column:1/-1; position:sticky; top:var(--topH, 60px); z-index:3; margin:10px -4px -6px; padding:8px 4px 7px;
   font-family:var(--serif); font-size:1.25rem; font-weight:700; background:var(--bg); border-bottom:1px solid var(--accent);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.gsez{font-weight:400; letter-spacing:.01em}
+.gsez::after{content:''; position:absolute; left:4px; bottom:0; width:42px; height:3px; background:var(--accent); border-radius:2px}
 .gsez small{font-family:inherit; font-weight:400; font-size:.8rem; color:var(--muted); margin-left:6px}
 .gsez.prima{margin-top:0}
 /* ricerca in una frase: cosa ha capito il sito, e i suggerimenti mentre si scrive */
@@ -118,7 +123,7 @@ body{
 .sugg button:hover, .sugg button.sel{background:var(--chip)}
 .sugg button small{color:var(--muted); margin-left:6px}
 .tag.quasi{background:transparent; border:1px dashed var(--border)}
-#quasi .gsez{position:static}
+#quasi .gsez{position:relative}
 .cercaing{display:block; width:calc(100% - 36px); margin:2px 18px 12px; padding:10px 14px; font:inherit; font-size:.9rem;
   color:var(--text); background:var(--bg); border:1px solid var(--border); border-radius:999px}
 .cercaing:focus{outline:none; border-color:var(--accent)}
@@ -126,10 +131,10 @@ body{
 .tag.debole{background:transparent; border:1px dashed var(--border)}
 .badge.forse{background:transparent; border:1px dashed var(--border); color:var(--muted)}
 .dfoot{flex-wrap:wrap}
-.btn.forte{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600}
+.btn.forte{background:var(--chip-on); border-color:var(--chip-on); color:#fff; font-weight:600}
 .iconbtn{position:relative}
 .iconbtn .conta{position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; padding:0 5px; border-radius:999px;
-  background:var(--accent); color:#fff; font-size:.68rem; line-height:18px; font-weight:700}
+  background:var(--chip-on); color:#fff; font-size:.68rem; line-height:18px; font-weight:700}
 .simili{display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-top:6px}
 .simili a{display:block; text-decoration:none; color:var(--text); border:1px solid var(--border); border-radius:12px; overflow:hidden; background:var(--panel)}
 .simili img{display:block; width:100%; aspect-ratio:3/2; object-fit:cover}
@@ -147,7 +152,7 @@ dialog#cucina[open]{display:flex; flex-direction:column}
 .ctimer{display:flex; flex-wrap:wrap; gap:8px; padding:8px 16px 0}
 .ctimer:empty{display:none}
 .ctimer button{font:inherit; font-size:.95rem; font-variant-numeric:tabular-nums; border:1px solid var(--accent); background:var(--accent-soft); color:var(--text); border-radius:999px; padding:8px 14px; cursor:pointer}
-.ctimer button.fine{background:var(--accent); color:#fff; animation:lampeggia 1s infinite}
+.ctimer button.fine{background:var(--chip-on); color:#fff; animation:lampeggia 1s infinite}
 @keyframes lampeggia{50%{opacity:.55}}
 .cpasso{flex:1; overflow:auto; padding:22px 22px 12px; display:flex; flex-direction:column; justify-content:center; max-width:820px; width:100%; margin:0 auto; box-sizing:border-box}
 .cpasso p{font-size:clamp(1.3rem,4.6vw,2rem); line-height:1.45; margin:0}
@@ -205,6 +210,20 @@ dialog#spesa::backdrop{background:rgba(10,8,6,.6)}
   cursor:pointer; transition:transform .25s, box-shadow .25s, border-color .25s;
   opacity:0; translate:0 18px;
 }
+/* vista indice */
+body.vindice .grid{grid-template-columns:1fr !important; gap:0 !important; max-width:820px}
+body.vindice .grid .card{display:flex; align-items:center; gap:12px; border:none; border-bottom:1px solid var(--border); border-radius:0; background:transparent; padding:7px 2px}
+body.vindice .grid .card:hover{transform:none; box-shadow:none; background:var(--accent-soft)}
+body.vindice .grid .card .head{width:52px; height:52px; min-height:0; aspect-ratio:auto; flex:none; border-radius:10px; font-size:1.4rem}
+body.vindice .grid .card .head .star{display:none}
+body.vindice .grid .card .body{padding:0 !important; flex:1; min-width:0; display:flex; align-items:baseline; gap:10px}
+body.vindice .grid .card h3{flex:1; margin:0 !important; font-size:1rem !important; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+body.vindice .grid .card .desc{display:none}
+body.vindice .grid .card .meta{flex:none}
+body.vindice .grid .card .meta .tag:not(.t):not(.debole):not(.quasi):not(.casa){display:none}
+body.vindice .grid .card .meta .tag{background:none; padding:0; font-size:.8rem; color:var(--muted)}
+body.vindice .grid .card .meta .tag.debole, body.vindice .grid .card .meta .tag.quasi, body.vindice .grid .card .meta .tag.casa{display:none}
+body.vindice .grid .gsez{margin-top:18px}
 .card.vis{opacity:1; translate:0 0; transition:opacity .5s var(--d,0s), translate .5s var(--d,0s), transform .25s, box-shadow .25s}
 .card:hover{transform:translateY(-5px); box-shadow:var(--shadow); border-color:var(--accent)}
 .card .head{
@@ -249,6 +268,7 @@ sup.ast{color:var(--gold); font-weight:700}
 .dhead .kicker{font-size:.78rem; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin-bottom:6px}
 .dhead h2{font-family:var(--serif); margin:0 0 8px; font-size:clamp(1.5rem,3.4vw,2.2rem)}
 .dhead .desc{color:var(--muted); margin:0 0 14px; line-height:1.6}
+.dhead .autore{font-family:var(--serif); font-style:italic; color:var(--muted); margin:-2px 0 10px; font-size:1rem}
 .badges{display:flex; flex-wrap:wrap; gap:7px}
 .badge{font-size:.78rem; background:var(--chip); padding:4px 11px; border-radius:999px}
 .badge.all{background:var(--accent-soft); color:var(--accent); font-weight:600}
@@ -341,10 +361,10 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
 
   .fab{
     position:fixed; bottom:calc(18px + env(safe-area-inset-bottom)); left:50%; translate:-50% 0; z-index:50;
-    border-radius:999px; padding:13px 22px; background:var(--accent); color:#fff; border:none;
+    border-radius:999px; padding:13px 22px; background:var(--chip-on); color:#fff; border:none;
     font-size:.95rem; font-family:inherit; box-shadow:var(--shadow); display:flex; align-items:center; gap:8px;
   }
-  .fbadge{background:#fff; color:var(--accent); border-radius:999px; padding:1px 8px; font-size:.75rem; font-weight:700}
+  .fbadge{background:#fff; color:var(--chip-on); border-radius:999px; padding:1px 8px; font-size:.75rem; font-weight:700}
 
   .scrim{display:block; position:fixed; inset:0; background:rgba(10,8,6,.5); z-index:55; opacity:0; transition:opacity .3s}
   .scrim.open{opacity:1}
@@ -383,7 +403,7 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
   .dhead h2{font-size:1.45rem; line-height:1.2; margin-bottom:6px}
   .dhead .desc{margin-bottom:8px; font-size:.92rem; line-height:1.45}
   .sec-ing{display:none}
-  .dhead .kicker{display:none}
+  .dhead .kicker{font-size:.68rem; margin-bottom:3px}
   .dhead{padding-bottom:8px}
   .dtab{padding:10px}
   .dcol.left{padding-top:8px}
@@ -447,6 +467,7 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
         <option value="valutazione">valutazione ↓</option>
       </select>
     </label>
+    <button class="btn" id="vistaBtn" title="Foto grandi o indice a righe">☰ Vista indice</button>
     <button class="btn reset" id="reset">Azzera filtri</button>
   </div>
 </section>
@@ -838,6 +859,17 @@ function renderFacets(){
 }
 /* tipi di piatto a portata di dito, sul telefono */
 /* ============ capitoli del libro ============ */
+function capitoloDi(r){
+  const c = r.capP, s = r.cap[c];
+  return CAPITOLI[c].n + (s !== undefined && nomeSez(c, s) ? ' · ' + nomeSez(c, s) : '');
+}
+function rigaFonte(r){
+  const p = r.persona, f = r.fonte || '';
+  if (p) return 'Dalla cucina di ' + (/^(Zi[ao]|Nonn[ao]) /.test(p) ? p[0].toLowerCase() + p.slice(1) : p);
+  if (/uaderno/.test(f)) return 'Dal quaderno di famiglia';
+  if (/^(http|web)/i.test(f)) return 'Dal web, adattata in casa';
+  return '';
+}
 // stessi capitoli e sottocapitoli del libro stampato (le regole stanno in ricette_lib.py)
 const CAPITOLI = [
   {n:'Antipasti', b:'Antipasti', e:'🥂'}, {n:'Primi piatti', b:'Primi', e:'🍝'},
@@ -995,8 +1027,9 @@ function renderDetail(){
     <img src="${fotoSrc(r, 800)}" alt="${esc(r.titolo)}" style="object-position:${r.fuoco || '50% 50%'}">
     <span class="lente">⤢ foto intera</span></button>` : ''}
   <div class="dhead">
-    <div class="kicker">${esc([r.regione || r.cucina, ...r.pietanza].filter(Boolean).join(' · '))}</div>
+    <div class="kicker">${esc(capitoloDi(r))}</div>
     <h2>${esc(r.titolo)}</h2>
+    ${rigaFonte(r) ? `<p class="autore">${esc(rigaFonte(r))}</p>` : ''}
     ${r.descrizione ? `<p class="desc">${md(r.descrizione)}</p>` : ''}
     <div class="badges">
       ${+r.tempoPrep ? `<span class="badge">⏱️ prep ${durata(+r.tempoPrep)}</span>` : ''}
@@ -1622,16 +1655,34 @@ $('#cucina').addEventListener('keydown', e => {
   }, {passive: true});
 })();
 
-/* ============ tema e avvio ============ */
-const themeBtn = $('#themeToggle');
-function setTheme(t){
-  document.documentElement.dataset.theme = t;
-  themeBtn.textContent = t === 'dark' ? '☀️' : '🌙';
-  store('ricetteTheme', t);
+/* ============ vista: foto o indice a righe ============ */
+let vistaIndice = store('ricetteVista') === 'indice';
+function applicaVista(){
+  document.body.classList.toggle('vindice', vistaIndice);
+  $('#vistaBtn').textContent = vistaIndice ? '▦ Vista foto' : '☰ Vista indice';
 }
-setTheme(store('ricetteTheme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
-themeBtn.addEventListener('click', () =>
-  setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
+$('#vistaBtn').addEventListener('click', () => { vistaIndice = !vistaIndice; store('ricetteVista', vistaIndice ? 'indice' : 'foto'); applicaVista(); });
+applicaVista();
+
+/* ============ tema e avvio ============ */
+// "auto" segue il telefono (chiaro di giorno, scuro la sera se il telefono e' impostato cosi');
+// il pulsante gira tra automatico, chiaro e scuro
+const themeBtn = $('#themeToggle');
+const mqChiaro = matchMedia('(prefers-color-scheme: light)');
+const TEMI = {auto:['🌓', 'automatico, come il telefono'], light:['☀️', 'sempre chiaro'], dark:['🌙', 'sempre scuro']};
+let temaScelto = store('ricetteTema');
+if (!TEMI[temaScelto]) temaScelto = 'auto';
+function applicaTema(){
+  document.documentElement.dataset.theme = temaScelto === 'auto' ? (mqChiaro.matches ? 'light' : 'dark') : temaScelto;
+  themeBtn.textContent = TEMI[temaScelto][0];
+  themeBtn.title = 'Tema: ' + TEMI[temaScelto][1];
+}
+applicaTema();
+mqChiaro.addEventListener('change', applicaTema);
+themeBtn.addEventListener('click', () => {
+  temaScelto = {auto:'light', light:'dark', dark:'auto'}[temaScelto];
+  store('ricetteTema', temaScelto); applicaTema();
+});
 renderPresets();
 refresh();
 route();
@@ -1661,7 +1712,7 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
     $('#statoOffline').textContent = 'foto scaricate: il ricettario funziona senza rete';
   });
   // chi tiene il sito aperto a lungo (dall'icona non c'e' il tasto ricarica) viene avvisato se esce una versione nuova
-  const VERSIONE_PAGINA = '95bceabe70';
+  const VERSIONE_PAGINA = 'ec3a10ef3e';
   let ultimoControllo = Date.now();
   const controllaVersione = async () => {
     if (document.visibilityState !== 'visible' || Date.now() - ultimoControllo < 30 * 60 * 1000) return;
