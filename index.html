@@ -103,10 +103,15 @@ body{
 .capitoli.liv .chip{font-size:.8rem; padding:5px 11px}
 .capitoli.liv .chip.vuota{opacity:.4}
 .capitoli.liv .etich{align-self:center; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); flex:0 0 auto}
-.ordtempo{display:flex; gap:6px; align-items:center; justify-content:flex-end; max-width:1200px; margin:14px auto -14px; padding:0 24px; font-size:.82rem; color:var(--muted)}
-.ordtempo .chip{font-size:.8rem; padding:4px 10px}
+.ordtempo{display:flex; justify-content:flex-end; max-width:1200px; margin:14px auto -14px; padding:0 24px}
+.ordbtn{flex:none; width:32px; height:32px; border-radius:50%; border:1px solid var(--border); background:var(--panel); color:var(--muted);
+  font:inherit; font-size:1rem; line-height:1; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; padding:0}
+.ordbtn.on{background:var(--chip-on); border-color:var(--chip-on); color:#fff; font-weight:700}
+.gsez{display:flex; align-items:center; gap:6px}
+.gsez .t{min-width:0; overflow:hidden; text-overflow:ellipsis}
+.gsez .ordbtn{margin-left:auto; width:30px; height:30px}
 /* tasto per tornare all'elenco */
-.dindietro{position:absolute; top:14px; left:14px; z-index:3; border:1px solid var(--border); border-radius:999px; padding:8px 14px;
+.dindietro{position:absolute; top:calc(14px + env(safe-area-inset-top)); left:14px; z-index:3; border:1px solid var(--border); border-radius:999px; padding:8px 14px;
   background:color-mix(in srgb, var(--bg2) 85%, transparent); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
   color:var(--text); font:inherit; font-size:.9rem; font-weight:600; cursor:pointer}
 @media print{ .dindietro, .ordtempo{display:none !important} }
@@ -227,7 +232,7 @@ dialog#spesa::backdrop{background:rgba(10,8,6,.6)}
   .capitoli::-webkit-scrollbar{display:none}
   .capitoli .chip{white-space:nowrap; flex:0 0 auto}
   .capitoli.liv{margin-top:6px}
-  .ordtempo{padding:0 12px; margin:12px 0 -10px}
+  .ordtempo{padding:0 12px; margin:12px 0 -6px}
   /* sul telefono il tasto sta in basso a sinistra, sempre a portata di pollice */
   .dindietro{position:fixed; top:auto; left:14px; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:8; box-shadow:var(--shadow); padding:12px 18px}
   .dindietro:focus:not(:focus-visible){outline:none}
@@ -371,7 +376,7 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
   .dimg{max-height:70mm}
 }
 @media (max-width:640px){
-  .topbar{padding:8px calc(16px + env(safe-area-inset-right)) 8px calc(16px + env(safe-area-inset-left))}
+  .topbar{padding:calc(8px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 8px calc(16px + env(safe-area-inset-left))}
   .brand{font-size:1.05rem; white-space:nowrap}
   .stats{font-size:.75rem; white-space:nowrap}
   .topbar{gap:8px; padding-left:calc(14px + env(safe-area-inset-left)); padding-right:calc(14px + env(safe-area-inset-right))}
@@ -419,7 +424,11 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
   .capito{justify-content:flex-start}
   .sugg button{padding:12px 16px}
 
-  dialog#detail{width:100vw; max-width:100vw; height:100dvh; max-height:100dvh; border-radius:0; border:none; margin:0}
+  dialog#detail{width:100vw; max-width:100vw; height:100dvh; max-height:100dvh; border-radius:0; border:none; margin:0;
+    padding-top:env(safe-area-inset-top)}
+  .dclose{top:calc(10px + env(safe-area-inset-top)) !important}
+  /* striscia sotto la barra di stato: il testo che scorre non ci finisce sotto */
+  dialog#detail::before{content:''; position:fixed; top:0; left:0; right:0; height:env(safe-area-inset-top); background:var(--bg2); z-index:20}
   /* testata asciutta: la foto intera non deve allontanare gli ingredienti */
   .dhead{padding-top:16px; padding-bottom:12px}
   .dhead .desc{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:10px; cursor:pointer}
@@ -432,7 +441,7 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
   .dfoot{padding-left:18px; padding-right:18px}
   .dclose{width:48px; height:48px; background:var(--panel2); opacity:.92; z-index:2}
 
-  .dtabs{display:flex; position:sticky; top:0; z-index:5; background:var(--bg2); border-bottom:1px solid var(--border)}
+  .dtabs{display:flex; position:sticky; top:env(safe-area-inset-top); z-index:5; background:var(--bg2); border-bottom:1px solid var(--border)}
   .dtab{flex:1; padding:14px; border:none; background:none; color:var(--muted); font-family:inherit; font-size:.95rem; border-bottom:2px solid transparent; cursor:pointer}
   .dtab.on{color:var(--accent); border-bottom-color:var(--accent); font-weight:600}
   .dbody{display:block}
@@ -518,9 +527,7 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
 
 <main>
   <div class="riprendi" id="riprendi" hidden></div>
-  <div class="ordtempo" id="ordTempo">Tempo:
-    <button class="chip" data-o="su" aria-pressed="false">↑ dal più breve</button>
-    <button class="chip" data-o="giu" aria-pressed="false">↓ dal più lungo</button></div>
+  <div class="ordtempo" id="ordTempo" hidden></div>
   <div class="grid" id="grid"></div>
   <div id="quasi"></div>
   <div class="empty" id="empty" hidden>
@@ -997,12 +1004,20 @@ function cardHTML(r, i){
         ${r.stile.map(s => `<span class="tag">${esc(s)}</span>`).join('')}
       </div></div></a>`;
 }
+/* ordine per tempo: un cerchio che gira fra niente (⇅), dal piu' breve (↑) e dal piu' lungo (↓) */
+function bottoneOrd(){
+  const t = {'':['⇅', 'Ordina per tempo'], su:['↑', 'Dal più breve: tocca per il più lungo'], giu:['↓', 'Dal più lungo: tocca per togliere']}[ordTempo];
+  return `<button class="ordbtn ${ordTempo ? 'on' : ''}" data-ord title="${t[1]}" aria-label="${t[1]}">${t[0]}</button>`;
+}
 function renderGrid(list, gruppi){
   const g = $('#grid');
+  // con le intestazioni il cerchio sta in ognuna (restano in alto scorrendo); senza, sopra l'elenco
+  $('#ordTempo').hidden = !!gruppi;
+  if (!gruppi) $('#ordTempo').innerHTML = bottoneOrd();
   if (gruppi){
     let html = '', i = 0;
     gruppi.forEach(([titolo, ricette], k) => {
-      html += `<h2 class="gsez${k ? '' : ' prima'}">${esc(titolo)}<small>${ricette.length}</small></h2>`;
+      html += `<h2 class="gsez${k ? '' : ' prima'}"><span class="t">${esc(titolo)}</span><small>${ricette.length}</small>${bottoneOrd()}</h2>`;
       html += ricette.map(r => cardHTML(r, i++)).join('');
     });
     g.innerHTML = html;
@@ -1378,10 +1393,10 @@ function sceltaLivelli(e){
   if (scrollY > top) scrollTo({top, behavior:'smooth'});
 }
 ['#capitoli', '#livello2', '#livello3'].forEach(id => $(id).addEventListener('click', sceltaLivelli));
-$('#ordTempo').addEventListener('click', e => {
-  const b = e.target.closest('.chip'); if (!b) return;
-  ordTempo = ordTempo === b.dataset.o ? '' : b.dataset.o;   // secondo tocco: niente ordine per tempo
-  $('#ordTempo').querySelectorAll('.chip').forEach(c => { const on = c.dataset.o === ordTempo; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); });
+document.addEventListener('click', e => {
+  if (!e.target.closest('.ordbtn[data-ord]')) return;
+  e.preventDefault();
+  ordTempo = {'':'su', su:'giu', giu:''}[ordTempo];
   refresh();
 });
 /* cosa ha capito la ricerca: un'etichetta per ogni filtro preso dalla frase */
@@ -1832,7 +1847,7 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
     $('#statoOffline').textContent = 'foto scaricate: il ricettario funziona senza rete';
   });
   // chi tiene il sito aperto a lungo (dall'icona non c'e' il tasto ricarica) viene avvisato se esce una versione nuova
-  const VERSIONE_PAGINA = 'fe7d207b96';
+  const VERSIONE_PAGINA = '62708faf67';
   let ultimoControllo = Date.now();
   const controllaVersione = async () => {
     if (document.visibilityState !== 'visible' || Date.now() - ultimoControllo < 30 * 60 * 1000) return;
