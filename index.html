@@ -98,6 +98,18 @@ body{
 .chip.preset{background:var(--accent-soft); border-color:transparent}
 .capitoli{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:16px auto 0; max-width:900px}
 .capitoli .chip.indietro{background:transparent}
+/* secondo e terzo livello: righe piu' piccole che compaiono sotto i capitoli */
+.capitoli.liv{margin-top:8px}
+.capitoli.liv .chip{font-size:.8rem; padding:5px 11px}
+.capitoli.liv .chip.vuota{opacity:.4}
+.capitoli.liv .etich{align-self:center; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); flex:0 0 auto}
+.ordtempo{display:flex; gap:6px; align-items:center; justify-content:flex-end; max-width:1200px; margin:14px auto -14px; padding:0 24px; font-size:.82rem; color:var(--muted)}
+.ordtempo .chip{font-size:.8rem; padding:4px 10px}
+/* tasto per tornare all'elenco */
+.dindietro{position:absolute; top:14px; left:14px; z-index:3; border:1px solid var(--border); border-radius:999px; padding:8px 14px;
+  background:color-mix(in srgb, var(--bg2) 85%, transparent); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  color:var(--text); font:inherit; font-size:.9rem; font-weight:600; cursor:pointer}
+@media print{ .dindietro, .ordtempo{display:none !important} }
 .strumenti{display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; justify-content:space-between; margin-bottom:14px}
 .strumenti .presets{margin:0; justify-content:flex-start}
 .strbtn{display:flex; gap:8px; flex-wrap:wrap}
@@ -214,6 +226,12 @@ dialog#spesa::backdrop{background:rgba(10,8,6,.6)}
   .capitoli{flex-wrap:nowrap; justify-content:flex-start; overflow-x:auto; margin:12px -16px 0; padding:2px 16px 6px; scrollbar-width:none; max-width:none}
   .capitoli::-webkit-scrollbar{display:none}
   .capitoli .chip{white-space:nowrap; flex:0 0 auto}
+  .capitoli.liv{margin-top:6px}
+  .ordtempo{padding:0 12px; margin:12px 0 -10px}
+  /* sul telefono il tasto sta in basso a sinistra, sempre a portata di pollice */
+  .dindietro{position:fixed; top:auto; left:14px; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:8; box-shadow:var(--shadow); padding:12px 18px}
+  .dindietro:focus:not(:focus-visible){outline:none}
+  #detail .dfoot{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 }
 .chip.preset .x{margin-left:7px; opacity:.55}
 .rangesort{display:flex; flex-wrap:wrap; gap:18px 28px; align-items:center; margin:16px 2px 0; color:var(--muted); font-size:.88rem}
@@ -458,6 +476,8 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
   </div>
   <div class="capito" id="capito" hidden></div>
   <nav class="capitoli" id="capitoli" aria-label="Capitoli del libro"></nav>
+  <nav class="capitoli liv" id="livello2" aria-label="Tipo" hidden></nav>
+  <nav class="capitoli liv" id="livello3" aria-label="Cucina" hidden></nav>
 </section>
 
 <section class="controls">
@@ -498,6 +518,9 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
 
 <main>
   <div class="riprendi" id="riprendi" hidden></div>
+  <div class="ordtempo" id="ordTempo">Tempo:
+    <button class="chip" data-o="su" aria-pressed="false">↑ dal più breve</button>
+    <button class="chip" data-o="giu" aria-pressed="false">↓ dal più lungo</button></div>
   <div class="grid" id="grid"></div>
   <div id="quasi"></div>
   <div class="empty" id="empty" hidden>
@@ -912,21 +935,40 @@ const SEZ_DOLCI = ['Torte, crostate e ciambelle', 'Biscotti e piccola pasticceri
   'Dolci al cucchiaio', 'Gelati e granite', 'Creme e basi'];
 const DOLCI = 6;
 const nomeSez = (c, i) => (c === DOLCI ? SEZ_DOLCI : SEZ_SALATI)[i] || '';
-let capSel = -1, sezSel = -1;           // -1 = tutti
+let capSel = -1;                        // -1 = tutti i capitoli
+const sezSel = new Set(), cucSel = new Set();   // secondo e terzo livello: piu' scelte, in "o"
+let ordTempo = '';                      // '', 'su' o 'giu'
+// terzo livello: le cucine in tre gruppi (l'italiana da sola e' il 70% delle ricette)
+const CUCINE = [['it', '🍅 Italiana'], ['reg', '📍 Regionale'], ['mondo', '🌍 Dal mondo']];
+const gruppoCucina = r => r.regione || r.cucina === 'italiana-regionale' ? 'reg' : r.cucina === 'italiana' ? 'it' : 'mondo';
+const EMO_SEZ = ['🥩', '🐟', '🥕', '🌱'];
+const passaLiv2 = r => !sezSel.size || sezSel.has(r.cap[capSel]);
+const passaLiv3 = r => !cucSel.size || cucSel.has(gruppoCucina(r));
 const inCap = (r, c) => r.cap[c] !== undefined;
 function renderCapitoli(base){
   const n = c => base.filter(r => inCap(r, c)).length;
   const chip = (on, attr, testo, quante) =>
     `<button class="chip ${on ? 'on' : ''}" ${attr}>${testo}<span class="c">${quante}</span></button>`;
-  if (capSel === DOLCI){
-    const dolci = base.filter(r => inCap(r, DOLCI));
-    $('#capitoli').innerHTML = `<button class="chip indietro" data-cap="-1">‹ Capitoli</button>` +
-      chip(sezSel < 0, 'data-sez="-1"', '🍰 Tutti i dolci', dolci.length) +
-      SEZ_DOLCI.map((t, i) => chip(sezSel === i, `data-sez="${i}"`, esc(t), dolci.filter(r => r.cap[DOLCI] === i).length)).join('');
-    return;
-  }
   $('#capitoli').innerHTML = chip(capSel < 0, 'data-cap="-1"', 'Tutte', base.length) +
     CAPITOLI.map((c, i) => chip(capSel === i, `data-cap="${i}"`, c.e + ' ' + c.b, n(i))).join('');
+  // secondo livello: carne/pesce/vegetariane/vegane, o le sezioni dei dolci
+  const l2 = $('#livello2'), l3 = $('#livello3');
+  l2.hidden = capSel < 0;
+  if (capSel >= 0){
+    const nelCap = base.filter(r => inCap(r, capSel));
+    const nomi = capSel === DOLCI ? SEZ_DOLCI : SEZ_SALATI;
+    const chipLiv = (on, attr, testo, quante) =>
+      `<button class="chip ${on ? 'on' : ''} ${quante ? '' : 'vuota'}" ${attr} aria-pressed="${on}">${testo}<span class="c">${quante}</span></button>`;
+    l2.innerHTML = nomi.map((t, i) => chipLiv(sezSel.has(i), `data-sez="${i}"`,
+      (capSel === DOLCI ? '' : EMO_SEZ[i] + ' ') + esc(t), nelCap.filter(r => r.cap[capSel] === i && passaLiv3(r)).length)).join('');
+    // terzo livello: compare dopo aver scelto almeno un'opzione del secondo
+    l3.hidden = !sezSel.size;
+    if (sezSel.size){
+      const nelLiv2 = nelCap.filter(passaLiv2);
+      l3.innerHTML = CUCINE.map(([k, t]) => chipLiv(cucSel.has(k), `data-cuc="${k}"`, t,
+        nelLiv2.filter(r => gruppoCucina(r) === k).length)).join('');
+    }
+  } else l3.hidden = true;
 }
 
 /* ============ griglia ============ */
@@ -1055,6 +1097,7 @@ function renderDetail(){
     '&file=' + encodeURIComponent('Ricette/' + r.file.replace(/\.md$/, ''));
   $('#detail').innerHTML = `
   <button class="iconbtn dclose" data-act="close" title="Chiudi" aria-label="Chiudi la ricetta">✕</button>
+  <button class="dindietro" data-act="close" aria-label="Torna all'elenco delle ricette">‹ Ricette</button>
   ${r.foto ? `<button class="dimg" data-act="zoom" style="--ph:${r.colore || 'var(--chip)'}" aria-label="Vedi la foto a tutto schermo">
     <img src="${fotoSrc(r, 800)}" alt="${esc(r.titolo)}" style="object-position:${r.fuoco || '50% 50%'}">
     <span class="lente">⤢ foto intera</span></button>` : ''}
@@ -1238,12 +1281,14 @@ function refresh(){
     valutazione:(a, b) => b.valutazione - a.valutazione,
   }[$('#sort').value];
   list.sort(cmp);
+  // ordine per tempo: dentro ogni sezione, perche' i gruppi conservano l'ordine dell'elenco
+  if (ordTempo) list.sort((a, b) => ordTempo === 'su' ? a.tempoTot - b.tempoTot : b.tempoTot - a.tempoTot);
   // capitolo scelto con la barra: filtra dopo la ricerca, cosi' i conteggi della barra
   // dicono quante ricette restano in ogni capitolo
   renderCapitoli(list);
   let vista = list;
   if (capSel >= 0) vista = vista.filter(r => inCap(r, capSel));
-  if (capSel >= 0 && sezSel >= 0) vista = vista.filter(r => r.cap[capSel] === sezSel);
+  if (capSel >= 0) vista = vista.filter(r => passaLiv2(r) && passaLiv3(r));
   // con "per capitolo" e senza testo cercato, la griglia e' divisa in sezioni come il libro
   let gruppi = null;
   if ($('#sort').value === 'cap' && !conTesto){
@@ -1311,19 +1356,33 @@ $('#q').addEventListener('keydown', e => {
   bs.forEach((b, i) => b.classList.toggle('sel', i === suggSel));
 });
 $('#sort').addEventListener('change', refresh);
-$('#reset').addEventListener('click', () => { $('#q').value = ''; capSel = sezSel = -1; refresh(); });
+$('#reset').addEventListener('click', () => { $('#q').value = ''; capSel = -1; sezSel.clear(); cucSel.clear(); ordTempo = ''; refresh(); });
 kcalR.addEventListener('change', () => sliderToken('kcal', kcalR, maxKcal));
 tempoR.addEventListener('change', () => sliderToken('tempo', tempoR, maxTempo));
 $('#helpBtn').addEventListener('click', () => $('#dslHelp').hidden = !$('#dslHelp').hidden);
 $('#facets').addEventListener('input', e => { if (e.target.id === 'cercaIng'){ cercaIng = e.target.value; filtraIngredienti(); } });
-$('#capitoli').addEventListener('click', e => {
+function sceltaLivelli(e){
   const b = e.target.closest('.chip'); if (!b) return;
-  if (b.dataset.cap !== undefined){ const c = +b.dataset.cap; capSel = capSel === c && c >= 0 && c !== DOLCI ? -1 : c; sezSel = -1; }
-  else if (b.dataset.sez !== undefined) sezSel = +b.dataset.sez;
+  if (b.dataset.cap !== undefined){
+    const c = +b.dataset.cap; capSel = capSel === c ? -1 : c;   // secondo tocco: tutti i capitoli
+    sezSel.clear(); cucSel.clear();
+  } else if (b.dataset.sez !== undefined){
+    const i = +b.dataset.sez; sezSel.has(i) ? sezSel.delete(i) : sezSel.add(i);
+    if (!sezSel.size) cucSel.clear();
+  } else if (b.dataset.cuc !== undefined){
+    const k = b.dataset.cuc; cucSel.has(k) ? cucSel.delete(k) : cucSel.add(k);
+  }
   refresh();
   const g = $('#grid'), alto = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--topH')) || 60;
   const top = g.getBoundingClientRect().top + scrollY - alto - 8;
   if (scrollY > top) scrollTo({top, behavior:'smooth'});
+}
+['#capitoli', '#livello2', '#livello3'].forEach(id => $(id).addEventListener('click', sceltaLivelli));
+$('#ordTempo').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  ordTempo = ordTempo === b.dataset.o ? '' : b.dataset.o;   // secondo tocco: niente ordine per tempo
+  $('#ordTempo').querySelectorAll('.chip').forEach(c => { const on = c.dataset.o === ordTempo; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); });
+  refresh();
 });
 /* cosa ha capito la ricerca: un'etichetta per ogni filtro preso dalla frase */
 function renderCapito(q){
@@ -1773,7 +1832,7 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
     $('#statoOffline').textContent = 'foto scaricate: il ricettario funziona senza rete';
   });
   // chi tiene il sito aperto a lungo (dall'icona non c'e' il tasto ricarica) viene avvisato se esce una versione nuova
-  const VERSIONE_PAGINA = '91d7632150';
+  const VERSIONE_PAGINA = 'fe7d207b96';
   let ultimoControllo = Date.now();
   const controllaVersione = async () => {
     if (document.visibilityState !== 'visible' || Date.now() - ultimoControllo < 30 * 60 * 1000) return;
