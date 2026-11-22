@@ -1,5 +1,5 @@
 // Service worker del Libro di Ricette — generato, non modificare a mano.
-const VERSIONE = 'c668a237ad';
+const VERSIONE = '91d7632150';
 const GUSCIO = 'ricette-guscio-' + VERSIONE;
 const FOTO = 'ricette-foto';
 const BASE_FILES = ['./', 'manifest.json', 'icone/icona-180.png', 'icone/icona-192.png'];
