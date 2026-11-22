@@ -332,7 +332,6 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
   .card .meta .tag:not(.t):not(.debole):not(.casa){display:none}
 
   dialog#detail{width:100vw; max-width:100vw; height:100dvh; max-height:100dvh; border-radius:0; border:none; margin:0}
-  .dimg{max-height:none}
   /* testata asciutta: la foto intera non deve allontanare gli ingredienti */
   .dhead{padding-top:16px; padding-bottom:12px}
   .dhead .desc{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:10px; cursor:pointer}
@@ -352,6 +351,21 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
   #detail:not(.tab-right) .dcol:not(.left){display:none}
   #detail.tab-right .dcol.left{display:none}
   .dcol.left{border-right:none; border-bottom:none}
+
+  /* testata compatta: ingredienti visibili all'apertura, senza scorrere */
+  .dhead h2{padding-right:44px}
+  .dhead h2{font-size:1.45rem; line-height:1.2; margin-bottom:6px}
+  .dhead .desc{margin-bottom:8px; font-size:.92rem; line-height:1.45}
+  .sec-ing{display:none}
+  .dhead .kicker{display:none}
+  .dhead{padding-bottom:8px}
+  .dtab{padding:10px}
+  .dcol.left{padding-top:8px}
+  .porz{margin:0 0 4px}
+  .porz .iconbtn{width:36px; height:36px}
+  /* foto come fascia bassa: un tocco la apre intera */
+  .dimg{aspect-ratio:auto; height:132px; max-height:none}
+  .dimg .lente{right:8px; bottom:8px; padding:3px 9px}
 }
 </style>
 </head>
@@ -858,8 +872,8 @@ function renderDetail(){
     <h2>${esc(r.titolo)}</h2>
     ${r.descrizione ? `<p class="desc">${md(r.descrizione)}</p>` : ''}
     <div class="badges">
-      <span class="badge">⏱️ prep ${r.tempoPrep} min</span>
-      <span class="badge">🔥 cottura ${r.tempoCottura} min</span>
+      ${+r.tempoPrep ? `<span class="badge">⏱️ prep ${durata(+r.tempoPrep)}</span>` : ''}
+      ${+r.tempoCottura ? `<span class="badge">🔥 cottura ${durata(+r.tempoCottura)}</span>` : '<span class="badge">🔥 senza cottura</span>'}
       ${r.tempoRiposo ? `<span class="badge" title="lievitazione, frigo, freezer, marinatura o ammollo: non è compreso nel tempo totale">⏳ riposo ${durata(r.tempoRiposo)}</span>` : ''}
       ${r.resa ? `<span class="badge">🧁 ${esc(r.resa)}</span>` : ''}
       <span class="badge">📊 ${esc(r.difficolta)}</span>
@@ -877,7 +891,7 @@ function renderDetail(){
   </div>
   <div class="dbody">
     <div class="dcol left">
-      <h4 class="sec">Ingredienti</h4>
+      <h4 class="sec sec-ing">Ingredienti</h4>
       <div class="porz">Porzioni:
         <button class="iconbtn" data-act="porz-" title="meno" aria-label="Una porzione in meno">−</button><b>${porzCur}</b>
         <button class="iconbtn" data-act="porz+" title="più" aria-label="Una porzione in più">+</button>
@@ -1397,7 +1411,7 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
     $('#statoOffline').textContent = 'foto scaricate: il ricettario funziona senza rete';
   });
   // chi tiene il sito aperto a lungo (dall'icona non c'e' il tasto ricarica) viene avvisato se esce una versione nuova
-  const VERSIONE_PAGINA = '38af394bb7';
+  const VERSIONE_PAGINA = '3a40c1a4f1';
   let ultimoControllo = Date.now();
   const controllaVersione = async () => {
     if (document.visibilityState !== 'visible' || Date.now() - ultimoControllo < 30 * 60 * 1000) return;
