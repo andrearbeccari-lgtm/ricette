@@ -185,6 +185,28 @@ dialog#spesa::backdrop{background:rgba(10,8,6,.6)}
 .avviso{position:fixed; left:50%; translate:-50% 0; bottom:calc(24px + env(safe-area-inset-bottom)); z-index:80; background:var(--bg2); border:1px solid var(--accent);
   border-radius:999px; padding:10px 14px 10px 18px; box-shadow:var(--shadow); display:flex; align-items:center; gap:12px; font-size:.9rem; max-width:92vw}
 .linkbtn{font:inherit; color:var(--accent); background:none; border:none; padding:0; cursor:pointer; text-decoration:underline}
+/* pagina continua (in prova): solo sul telefono */
+.ingbtn, .ingpanel{display:none}
+@media (min-width:641px){.solo-tel{display:none !important}}
+@media (max-width:640px){
+  #detail.continua .dtabs{display:none !important}
+  #detail.continua .dcol{display:block !important}
+  #detail.continua .sec-ing{display:block; margin-top:6px}
+  #detail.continua .dcol.left{border-bottom:1px solid var(--border); padding-bottom:14px}
+  #detail.continua.mostra-ib .ingbtn{display:flex}
+  .ingbtn{position:fixed; right:16px; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:8; align-items:center; gap:6px;
+    border:none; border-radius:999px; padding:12px 18px; background:var(--chip-on); color:#fff; font:inherit; font-size:.95rem; font-weight:600; box-shadow:var(--shadow); cursor:pointer}
+  #detail.continua.ip-open .ingbtn{display:none}
+  #detail.continua.ip-open .ingpanel{display:block}
+  #detail.continua.ip-open .dbody{padding-bottom:52dvh}
+  .ingpanel{position:fixed; left:0; right:0; bottom:0; z-index:9; max-height:50dvh; overflow:auto; overscroll-behavior:contain;
+    background:var(--bg2); border-top:2px solid var(--accent); border-radius:18px 18px 0 0; box-shadow:0 -12px 40px rgba(0,0,0,.35);
+    padding:0 18px calc(14px + env(safe-area-inset-bottom))}
+  .iphead{position:sticky; top:0; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0 8px; background:var(--bg2); border-bottom:1px solid var(--border)}
+  .iphead b{font-family:var(--serif); font-size:1.05rem}
+  .iphead small{color:var(--muted); font-weight:400; font-family:var(--sans); font-size:.8rem; margin-left:6px}
+}
+@media print{ .ingbtn, .ingpanel{display:none !important} }
 @media print{ dialog#cucina, dialog#spesa, .avviso, .simili, .secsimili{display:none !important} }
 @media (max-width:640px){
   .capitoli{flex-wrap:nowrap; justify-content:flex-start; overflow-x:auto; margin:12px -16px 0; padding:2px 16px 6px; scrollbar-width:none; max-width:none}
@@ -940,6 +962,7 @@ function renderGrid(list, gruppi){
 
 /* ============ dettaglio ============ */
 let cur = null, porzCur = 0;
+let continua = store('ricetteContinua') === true;   // pagina continua, in prova
 const FR = {'½':.5, '¼':.25, '¾':.75, '⅓':1/3, '⅔':2/3};
 const UNI = 'g|gr|kg|hg|mg|ml|cl|dl|l|lt|litr[oi]|cucchiai[o]?|cucchiain[oi]|bicchier[ei]|bicchierin[oi]|tazz[ae]|tazzin[ae]|bustin[ae]|pizzic(?:o|hi)|noc[ei]|spicchi[o]?|fogli[ae]|fett[ae]|cubett[oi]|vasett[oi]|uov[ao]|tuorl[oi]|album[ei]|mestol[oi]|manciat[ae]|ett[oi]';
 const NUM = '(?:\\d+(?:[.,]\\d+)?(?:\\s*\\/\\s*\\d+)?|[½¼¾⅓⅔])';
@@ -1086,8 +1109,17 @@ function renderDetail(){
     <button class="btn" data-act="print">🖨️ Stampa</button>
     <a class="btn solo-pc" href="${obs}" style="text-decoration:none">🗒️ Apri in Obsidian</a>
     <button class="btn" data-act="wake" id="wakeBtn" hidden>🔆 Schermo acceso</button>
+    <button class="btn solo-tel" data-act="continua">${continua ? '🗂️ Torna alle schede' : '📜 Prova la pagina continua'}</button>
+  </div>
+  <button class="ingbtn" data-act="ingpanel" aria-label="Mostra gli ingredienti">🧺 Ingredienti · ${r.ingredienti.filter(i => !i.sub).length}</button>
+  <div class="ingpanel" role="region" aria-label="Ingredienti">
+    <div class="iphead"><b>Ingredienti<small>${porzCur} porzioni</small></b>
+      <button class="iconbtn" data-act="ingpanel" aria-label="Chiudi gli ingredienti">✕</button></div>
+    <ul class="ing">${r.ingredienti.map(i =>
+      i.sub ? `<li class="sub">${md(i.sub)}</li>` : `<li>${md(scaleTxt(i.item, f))}</li>`).join('')}</ul>
   </div>`;
   $('#detail').classList.remove('tab-right');
+  $('#detail').classList.toggle('continua', continua);
   if ('wakeLock' in navigator){
     $('#wakeBtn').hidden = false;
     if (wakeLock){ $('#wakeBtn').classList.add('on'); $('#wakeBtn').textContent = '🔆 Schermo acceso ✓'; }
@@ -1097,6 +1129,7 @@ const ridotto = matchMedia('(prefers-reduced-motion: reduce)');
 let cardAperta = null, navInterna = false;
 function openDetail(r){
   cur = r; porzCur = +r.porzioni || 1;
+  $('#detail').classList.remove('ip-open', 'mostra-ib');
   store('ricettaUltima', {id:r.id, t:Date.now()});
   renderDetail();
   const d = $('#detail');
@@ -1368,6 +1401,11 @@ $('#grid').addEventListener('click', e => {
   const c = e.target.closest('.card'); if (!c) return;
   cardAperta = c; navInterna = true;   // l'apertura avviene con il cambio di indirizzo (#/r/...)
 });
+$('#detail').addEventListener('scroll', () => {
+  const d = $('#detail'); if (!d.classList.contains('continua')) return;
+  const ul = d.querySelector('.dcol.left ul.ing'); if (!ul) return;
+  d.classList.toggle('mostra-ib', ul.getBoundingClientRect().bottom < 40);
+}, {passive: true});
 $('#detail').addEventListener('click', e => {
   if (e.target === $('#detail')) return $('#detail').close();
   const tabBtn = e.target.closest('.dtab');
@@ -1382,7 +1420,15 @@ $('#detail').addEventListener('click', e => {
   const descr = e.target.closest('.dhead .desc');
   if (descr){ descr.classList.toggle('tutta'); return; }
   const li = e.target.closest('ul.ing li:not(.sub), ol.prep li');
-  if (li){ li.classList.toggle('done'); return; }
+  if (li){
+    li.classList.toggle('done');
+    const ul = li.parentElement;
+    if (ul.matches('ul.ing')){
+      const i = [...ul.children].indexOf(li);
+      $('#detail').querySelectorAll('ul.ing').forEach(u => { if (u !== ul && u.children[i]) u.children[i].classList.toggle('done', li.classList.contains('done')); });
+    }
+    return;
+  }
   const b = e.target.closest('[data-act]'); if (!b) return;
   const act = b.dataset.act;
   if (act === 'close') $('#detail').close();
@@ -1394,6 +1440,11 @@ $('#detail').addEventListener('click', e => {
     lb.querySelector('img').alt = cur.titolo;
     lb.showModal();
   }
+  else if (act === 'continua'){
+    continua = !continua; store('ricetteContinua', continua);
+    $('#detail').classList.remove('ip-open', 'mostra-ib'); renderDetail();
+  }
+  else if (act === 'ingpanel') $('#detail').classList.toggle('ip-open');
   else if (act === 'porz+'){ porzCur++; renderDetail(); }
   else if (act === 'porz-'){ if (porzCur > 1) porzCur--; renderDetail(); }
   else if (act === 'wake') toggleWakeLock();
@@ -1712,7 +1763,7 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
     $('#statoOffline').textContent = 'foto scaricate: il ricettario funziona senza rete';
   });
   // chi tiene il sito aperto a lungo (dall'icona non c'e' il tasto ricarica) viene avvisato se esce una versione nuova
-  const VERSIONE_PAGINA = 'ec3a10ef3e';
+  const VERSIONE_PAGINA = '4f19f901b6';
   let ultimoControllo = Date.now();
   const controllaVersione = async () => {
     if (document.visibilityState !== 'visible' || Date.now() - ultimoControllo < 30 * 60 * 1000) return;
