@@ -185,6 +185,8 @@ dialog#spesa::backdrop{background:rgba(10,8,6,.6)}
 .avviso{position:fixed; left:50%; translate:-50% 0; bottom:calc(24px + env(safe-area-inset-bottom)); z-index:80; background:var(--bg2); border:1px solid var(--accent);
   border-radius:999px; padding:10px 14px 10px 18px; box-shadow:var(--shadow); display:flex; align-items:center; gap:12px; font-size:.9rem; max-width:92vw}
 .linkbtn{font:inherit; color:var(--accent); background:none; border:none; padding:0; cursor:pointer; text-decoration:underline}
+/* telefoni stretti: il contatore diventa "233 ricette" per far stare i tre pulsanti */
+@media (max-width:420px){.topbar .stot{display:none}}
 /* pagina continua (in prova): solo sul telefono */
 .ingbtn, .ingpanel{display:none}
 @media (min-width:641px){.solo-tel{display:none !important}}
@@ -440,7 +442,8 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
 <body>
 <header class="topbar">
   <div class="brand">🍋 Libro di <em>Ricette</em></div>
-  <div class="stats"><span id="statShown">0</span> / <span id="statTot">0</span> ricette</div>
+  <div class="stats"><span id="statShown">0</span><span class="stot"> / <span id="statTot">0</span></span> ricette</div>
+  <button class="iconbtn" id="vistaBtn" title="Vista indice a righe" aria-label="Passa alla vista indice a righe">☰</button>
   <button class="iconbtn" id="spesaBtn" title="Lista della spesa" aria-label="Apri la lista della spesa">🛒<span class="conta" id="spesaConta" hidden>0</span></button>
   <button class="iconbtn" id="themeToggle" title="Tema chiaro/scuro" aria-label="Cambia tema chiaro o scuro">☀️</button>
 </header>
@@ -489,7 +492,6 @@ footer{max-width:1200px; margin:0 auto; padding:20px 24px calc(40px + env(safe-a
         <option value="valutazione">valutazione ↓</option>
       </select>
     </label>
-    <button class="btn" id="vistaBtn" title="Foto grandi o indice a righe">☰ Vista indice</button>
     <button class="btn reset" id="reset">Azzera filtri</button>
   </div>
 </section>
@@ -1710,7 +1712,8 @@ $('#cucina').addEventListener('keydown', e => {
 let vistaIndice = store('ricetteVista') === 'indice';
 function applicaVista(){
   document.body.classList.toggle('vindice', vistaIndice);
-  $('#vistaBtn').textContent = vistaIndice ? '▦ Vista foto' : '☰ Vista indice';
+  const b = $('#vistaBtn'), t = vistaIndice ? 'Vista foto grandi' : 'Vista indice a righe';
+  b.textContent = vistaIndice ? '▦' : '☰'; b.title = t; b.setAttribute('aria-label', 'Passa alla ' + t.toLowerCase());
 }
 $('#vistaBtn').addEventListener('click', () => { vistaIndice = !vistaIndice; store('ricetteVista', vistaIndice ? 'indice' : 'foto'); applicaVista(); });
 applicaVista();
@@ -1763,7 +1766,7 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
     $('#statoOffline').textContent = 'foto scaricate: il ricettario funziona senza rete';
   });
   // chi tiene il sito aperto a lungo (dall'icona non c'e' il tasto ricarica) viene avvisato se esce una versione nuova
-  const VERSIONE_PAGINA = '4f19f901b6';
+  const VERSIONE_PAGINA = 'c668a237ad';
   let ultimoControllo = Date.now();
   const controllaVersione = async () => {
     if (document.visibilityState !== 'visible' || Date.now() - ultimoControllo < 30 * 60 * 1000) return;
